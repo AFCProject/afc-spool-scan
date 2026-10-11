@@ -144,9 +144,11 @@ process_line() {
         echo "Magic code Scanned"
         SPOOL_ID="${line#$SPOOLMAN_PREFIX}"
         post_next_spool_id "${SPOOL_ID}"
-    elif [[ "$line" == "http"* ]]; then
+    # Only Spoolman spool pages; other URLs (filament pages, product links)
+    # would otherwise send a bogus ID and clear the spool queued for next load.
+    elif [[ "$line" =~ ^https?://[^/]+(/[^/]+)*/spool/show/([0-9]+)/?$ ]]; then
         echo "URL Scanned"
-        SPOOL_ID=`echo $line | cut -d'/' -f6`
+        SPOOL_ID="${BASH_REMATCH[2]}"
         post_next_spool_id "${SPOOL_ID}"
     elif [[ "$line" == "$MOONRAKER_PREFIX"* ]]; then
         echo "Moonraker code Scanned"
