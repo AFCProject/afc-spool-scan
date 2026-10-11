@@ -78,6 +78,13 @@ fi
 
 post_next_spool_id() {
     local SPOOL_ID="$1"
+    # The ID goes into the G-code unescaped, so allow digits only. An empty ID
+    # would clear the spool queued for next load, and a scanned "\n" would run
+    # a second command.
+    if [[ ! "$SPOOL_ID" =~ ^[0-9]+$ ]]; then
+        echo "Ignoring invalid spool ID '${SPOOL_ID}'"
+        return 1
+    fi
     curl -X POST "${MOONRAKER_SCHEME}://${MOONRAKER_HOST}:${MOONRAKER_PORT}/printer/gcode/script" \
         -H "Content-Type: application/json" \
         -d "{\"script\": \"SET_NEXT_SPOOL_ID SPOOL_ID=${SPOOL_ID}\"}"
